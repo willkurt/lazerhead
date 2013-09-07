@@ -1,0 +1,287 @@
+<html>
+<head>
+<title>LazerHead: Escape from Hades!!!</title>
+</head>
+<body>
+  <canvas id='canvas' width='800' height='600'></canvas>
+  <script type="text/javascript">
+//helper functions
+    window.requestAnimFrame = (function(){
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        function( callback ){
+          window.setTimeout(callback, 1000 / 60);
+        };
+        
+    })();
+
+    function rand(lo,hi) {
+      return lo + Math.random()*(hi-lo);
+    }
+
+    function randColor() {
+      return '#'+Math.floor(Math.random()*16777215).toString(16);
+    }
+
+    
+    var pressed = {};
+    var player = new Box(0,300,50,100);
+    var monolith = new Box(300,300,500,200);
+    var effects = [];
+    var ground = 500;
+    
+    
+    var ctx = document.getElementById('canvas').getContext('2d');
+
+
+    function setup() {
+      document.addEventListener('keydown', function(e){
+        pressed[e.keyCode] = true;
+      });
+      
+      document.addEventListener('keyup', function(e){
+        pressed[e.keyCode] = false;
+      });
+
+      player.dy = 0;
+      
+    }
+    
+
+
+
+    function gameLoop() {
+      processInput();
+      updateGameState();
+      checkConditions();
+      processAnimations();
+      draw();
+      window.requestAnimFrame(gameLoop);
+    }
+    
+    
+    function processInput() {
+
+    }
+
+     
+    var jumping = false;
+    function updateGameState() {
+
+      monolith.attacked = false;
+      if(pressed['A'.charCodeAt(0)] == true) {
+        player.x -= 3;
+      }
+      if(pressed['D'.charCodeAt(0)] == true) {
+        player.x += 3;
+      }
+
+      if(pressed[' '.charCodeAt(0)] == true) {
+        if(!jumping && player.getBottom()>0){
+          player.dy -= 30;
+          jumping = true;
+        }}
+      else {
+        jumping = false;
+      }
+      
+      if(pressed['J'.charCodeAt(0)] == true){
+        effects.push(new lazerEffect(player.x+player.w-20,player.y));
+        if(player.getBottom() < ground){ 
+          player.x -= 10; 
+        }else{
+          player.x -= 3.25;
+        }
+         
+
+      }
+      
+
+      if(pressed['J'.charCodeAt(0)] != true){     
+        player.y += player.dy;
+        player.dy += 1;
+
+      }
+
+      
+
+    }
+
+
+    function checkConditions() {
+      if(player.intersects(monolith)){
+        console.log("player hit monolith");
+      }
+        
+      if(player.getBottom() > ground){
+        player.dy = 0;
+        player.setBottom(ground);
+      }
+
+      if(player.getBottom() < 0){
+        player.setBottom(0);
+      }
+      
+      
+    }
+
+
+    var tick = 0;
+    function processAnimations() {
+
+    }
+
+
+
+
+    function draw() {
+
+      // background - sky
+      ctx.fillStyle = "#222233";
+      ctx.fillRect(0,0,800,600);
+
+      //ground
+      ctx.fillStyle = "brown";
+      ctx.fillRect(0,500,800,100);
+
+      //player
+      ctx.fillStyle = "white";
+      player.fillRect(ctx);
+
+
+
+      //monolith
+      if(monolith.health > 0){
+        if(false){
+          ctx.fillStyle = "#ffff00";
+        } else {
+          ctx.fillStyle = "#775555";
+        }
+         
+ 
+        
+        monolith.fillRect(ctx);
+      }
+
+      //effects
+      effects.forEach(function(ef){
+        ef.tick();
+        ef.draw(ctx);
+      });
+
+
+    }
+    function refresh() {}
+    
+    function Box(x,y,w,h) {
+      this.x = x;
+      this.y = y;
+      this.w = w;
+      this.h = h;
+      this.health = this.w*this.h;
+      this.fillRect = function(ctx) {
+        ctx.fillRect(this.x,this.y,this.w,this.h);
+      }
+      this.getRight = function() { return this.x + this.w ; }
+      this.getLeft = function(){ return this.x; }
+      this.getTop = function(){return this.y; }
+      this.getBottom = function(){ return this.y + this.h;}
+      
+      this.setRight = function(right){ this.x = right - this.w;
+                              }
+      this.setLeft = function(left){ this.x = left;
+                            }
+      this.setBottom = function(bottom){ this.y = bottom - this.h;
+                                }
+      this.setTop = function(top) { this.y = top;
+                           }
+      
+      this.intersects = function(box) {
+        if(this.health <= 0){return false;
+                                    }
+        if(this.getRight() >= box.getLeft() 
+           && this.getLeft() <= box.getRight()) {
+        if(this.getBottom() >= box.getTop() &&
+           this.getTop() <= box.getBottom()){
+          return true;
+        }
+          
+        }
+        return false;
+      }
+
+      this.intersectedByPoint = function(x,y) {
+        if(this.health <= 0){return false;
+                                    }
+          
+        if(this.getRight() >= x
+           && this.getLeft() <= x) {
+        if(this.getBottom() >= y &&
+           this.getTop() <= y){
+          return true;
+        }
+          
+        }
+        return false;
+      }
+      
+      this.damage = function(d){
+        this.health -= d;
+      }
+      
+      
+    }
+    
+
+
+function lazerEffect(x,y){
+    this.x = x;
+    this.dx = 5;
+    this.y = y;
+    this.age = 0;
+    this.maxage = 200;
+    this.alive = true;
+    this.color = "#ff0000";
+    this.tick = function(){
+      this.age++;
+     
+      if(!monolith.intersectedByPoint(this.x,this.y)){    
+        this.x += this.dx;
+      } else if(this.alive) {
+        this.age += 5;
+        monolith.damage(1);
+        monolith.attacked = true;
+      }
+
+
+
+      this.y;
+      if(this.age > this.maxage) {
+        this.alive = false;
+        return;
+      }
+    }
+    
+
+    this.draw = function(g) {
+      if(!this.alive) return;
+      var size = 150;
+      g.save();
+      g.fillStyle = this.color;
+      g.globalAlpha = rand(0.01,0.1);
+      //g.fillRect(this.x,this.y,20,20*(1-(this.age/this.maxage)));
+      g.beginPath();
+      g.arc(this.x,this.y,(0.5*size)*(1-(this.age/this.maxage))+(0.1*size),0,Math.PI*2,true);
+      g.closePath();
+      g.fill();
+      g.restore();}
+}
+
+
+    setup();
+    window.requestAnimFrame(gameLoop);
+
+</script>
+</body>
+</html>
