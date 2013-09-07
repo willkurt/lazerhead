@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>LazerHead: Escape from Hades!!!</title>
+<title>LazerHead: Escape from Planetl Hades!!!</title>
 </head>
 <body>
   <canvas id='canvas' width='800' height='600'></canvas>
@@ -24,13 +24,49 @@
       return '#'+Math.floor(Math.random()*16777215).toString(16);
     }
 
+
+    var skyline1 = [];
+    for(var i=0; i<200; i++){
+      skyline1[i] = rand(20,250);
+    }
+
+
+    var skyline2 = [];
+    for(var i=0; i<100; i++){
+      skyline2[i] = rand(50,200);
+    }
+
+    var skyline3 = []
+    for(var i=0; i<100; i++){
+      skyline3[i] = rand(250,400);
+    }
+
+    var skyline3dists = []
+    for(var i=0; i<100; i++){
+      skyline3dists[i] = rand(250,500);
+    }
+
+    var skyline3widths = []
+    for(var i=0; i<100; i++){
+      skyline3widths[i] = rand(50,100);
+    }
+
+
+    var starsCount = 500;
+    var starxs =[]
+    var starys =[]
+    var starrads =[]
+
+
     
     var pressed = {};
     var player = new Box(0,300,50,100);
+    
     var monolith = new Box(300,300,500,200);
     var effects = [];
     var ground = 500;
-    
+
+    var camera = 0;
     
     var ctx = document.getElementById('canvas').getContext('2d');
 
@@ -45,7 +81,8 @@
       });
 
       player.dy = 0;
-      
+      player.power = 25;
+      player.maxpower = 150;
     }
     
 
@@ -57,6 +94,7 @@
       checkConditions();
       processAnimations();
       draw();
+      cleanUp();
       window.requestAnimFrame(gameLoop);
     }
     
@@ -69,7 +107,6 @@
     var jumping = false;
     function updateGameState() {
 
-      monolith.attacked = false;
       if(pressed['A'.charCodeAt(0)] == true) {
         player.x -= 3;
       }
@@ -89,23 +126,39 @@
       if(pressed['J'.charCodeAt(0)] == true){
         effects.push(new lazerEffect(player.x+player.w-20,player.y));
         if(player.getBottom() < ground){ 
-          player.x -= 10; 
+          player.x -= (Math.pow(player.power,2))*0.0010; 
         }else{
-          player.x -= 3.25;
+          player.x -= (Math.pow(player.power,2))*0.000325;
         }
-         
-
+        if(player.power > 10){player.power -= 0.1;};
       }
       
-
+      
+      if(pressed['L'.charCodeAt(0)] == true){
+        if(player.power < player.maxpower){
+          console.log("Aaaaaaaaaaa!!!")
+          player.power += 0.5;
+        } else {
+          console.log("MAX POWER!");
+        }
+          
+          
+      }
+      
+      //float while using lazer!
       if(pressed['J'.charCodeAt(0)] != true){     
         player.y += player.dy;
         player.dy += 1;
 
       }
 
-      
+      camera = player.x - 200;
 
+
+      if(rand(0,100) > 99){
+        effects.push(new lavaBallEffect());
+      }
+      
     }
 
 
@@ -132,45 +185,98 @@
 
     }
 
-
-
-
-    function draw() {
-
+    function drawBackground(ctx){
       // background - sky
-      ctx.fillStyle = "#222233";
+      ctx.fillStyle = "#111122";
       ctx.fillRect(0,0,800,600);
 
-      //ground
-      ctx.fillStyle = "brown";
-      ctx.fillRect(0,500,800,100);
+    }
 
+    function drawGround(ctx){
+      //ground
+      ctx.fillStyle = "#555555";
+      ctx.fillRect(0,500,800,100);
+    }
+
+    function drawPlayer(ctx){
+      ctx.save();
       //player
       ctx.fillStyle = "white";
       player.fillRect(ctx);
+      ctx.restore();
+    }
 
-
-
+    function drawWalls(ctx){
       //monolith
       if(monolith.health > 0){
-        if(false){
-          ctx.fillStyle = "#ffff00";
-        } else {
-          ctx.fillStyle = "#775555";
-        }
-         
- 
-        
+        ctx.fillStyle = "#a9a9a9";
         monolith.fillRect(ctx);
       }
 
+    }
+
+
+    function drawStarfield(ctx){
+
+    }
+
+    function drawSkyline1(ctx){
+      ctx.save();
+      ctx.translate(-camera/3,0);
+      ctx.fillStyle = "#222230";
+      for(var i in skyline1) {
+        var h = skyline1[i];
+        ctx.fillRect(i*25-200,ground - h,26,h);
+      }
+      ctx.restore();
+
+    }
+
+    function drawSkyline2(ctx){
+      ctx.save();
+      ctx.translate(-camera/2,0);
+      ctx.fillStyle = "#333344";
+      for(var i in skyline2) {
+        var h = skyline2[i];
+        ctx.fillRect(i*50-200,ground - h,51,h);
+      }
+      ctx.restore();
+    }
+
+    function drawSkyline3(ctx){
+      ctx.save();
+      ctx.translate(-camera/1.3,0);
+      ctx.fillStyle = "#555567";
+      for(var i in skyline3) {
+        var h = skyline3[i];
+        ctx.fillRect(i*skyline3dists[i],ground - h,skyline3widths[i],h);
+      }
+      ctx.restore();
+    }
+
+
+    function drawEffects(ctx){
       //effects
       effects.forEach(function(ef){
         ef.tick();
         ef.draw(ctx);
       });
+    }
 
 
+    function draw() {
+      drawBackground(ctx);
+      drawSkyline1(ctx);
+      drawSkyline2(ctx);
+      drawSkyline3(ctx);
+     
+      drawGround(ctx);
+      ctx.save();
+      ctx.translate(-camera,0);
+      drawPlayer(ctx);
+      drawWalls(ctx);
+      drawEffects(ctx);
+      ctx.restore();
     }
     function refresh() {}
     
@@ -198,7 +304,7 @@
                            }
       
       this.intersects = function(box) {
-        if(this.health <= 0){return false;
+        if(box.health <= 0){return false;
                                     }
         if(this.getRight() >= box.getLeft() 
            && this.getLeft() <= box.getRight()) {
@@ -228,11 +334,68 @@
       
       this.damage = function(d){
         this.health -= d;
+        effects.push(new boxDamageEffect(this));
       }
       
       
     }
+
+function lavaBallEffect(){
     
+    this.age = 0;
+    this.maxage = 800;
+    this.size = rand(20,50);
+    this.x = player.x - 350;
+    this.y = rand(ground-this.size,0);
+    this.dx = rand(2,4);
+    this.tick = function(){
+      this.age++;
+      this.x += this.dx;
+    }
+    
+    this.draw = function(g){
+      g.save();
+
+      g.fillStyle = "#dd2222";
+      g.fillRect(this.x+this.size*0.15,this.y+this.size*0.15,this.size*0.7,this.size*0.7);
+
+      g.globalAlpha = 0.6;
+      g.fillStyle = "#dddd22";
+      g.fillRect(this.x,this.y,this.size,this.size);
+
+      g.restore();
+    }
+    
+         
+    this.isAlive = function(){
+      return this.age < this.maxage;
+    }
+    
+    
+}
+
+    
+function boxDamageEffect(box){
+    this.box = box;
+    this.age = 0;
+    this.maxage = 2;
+    this.damageColor = "#ffff00"
+    this.tick = function(){
+      this.age++
+    }
+    
+    this.draw = function(g){
+      g.fillStyle = this.damageColor;
+      this.box.fillRect(g);
+    }
+    
+    this.isAlive = function(){
+      return this.age < this.maxage;
+    }
+    
+       
+
+}
 
 
 function lazerEffect(x,y){
@@ -240,8 +403,9 @@ function lazerEffect(x,y){
     this.dx = 5;
     this.y = y;
     this.age = 0;
-    this.maxage = 200;
+    this.maxage = player.power*2;
     this.alive = true;
+    this.power = player.power
     this.color = "#ff0000";
     this.tick = function(){
       this.age++;
@@ -250,11 +414,8 @@ function lazerEffect(x,y){
         this.x += this.dx;
       } else if(this.alive) {
         this.age += 5;
-        monolith.damage(1);
-        monolith.attacked = true;
+        monolith.damage(this.radius());
       }
-
-
 
       this.y;
       if(this.age > this.maxage) {
@@ -263,20 +424,35 @@ function lazerEffect(x,y){
       }
     }
     
+    this.radius = function(){
+      return ((0.5*this.power)*(1-(this.age/this.maxage))+(0.1*this.power));
+    }
 
     this.draw = function(g) {
       if(!this.alive) return;
-      var size = 150;
+
       g.save();
       g.fillStyle = this.color;
       g.globalAlpha = rand(0.01,0.1);
       //g.fillRect(this.x,this.y,20,20*(1-(this.age/this.maxage)));
       g.beginPath();
-      g.arc(this.x,this.y,(0.5*size)*(1-(this.age/this.maxage))+(0.1*size),0,Math.PI*2,true);
+      g.arc(this.x,this.y,this.radius(),0,Math.PI*2,true);
       g.closePath();
       g.fill();
       g.restore();}
+    
+    //isAlive will be used to remove effects from global effects list
+    this.isAlive = function(){
+      return this.age < this.maxage;
+    }
+    
 }
+
+
+    function cleanUp(){
+      effects = effects.filter(function(ef){return ef.isAlive();                                            });
+
+    }
 
 
     setup();
