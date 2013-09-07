@@ -25,6 +25,18 @@
     }
 
 
+    var pressed = {};
+    var player = new Box(0,300,50,100);
+    
+    var monolith = new Box(300,300,500,200);
+    var effects = [];
+    var ground = 500;
+
+    var camera = 0;
+    
+    var ctx = document.getElementById('canvas').getContext('2d');
+
+
     var skyline1 = [];
     for(var i=0; i<200; i++){
       skyline1[i] = rand(20,250);
@@ -37,38 +49,27 @@
     }
 
     var skyline3 = []
-    for(var i=0; i<100; i++){
-      skyline3[i] = rand(250,400);
-    }
-
     var skyline3dists = []
-    for(var i=0; i<100; i++){
-      skyline3dists[i] = rand(250,500);
-    }
-
     var skyline3widths = []
     for(var i=0; i<100; i++){
+      skyline3[i] = rand(250,400);
+      skyline3dists[i] = rand(250,500);
       skyline3widths[i] = rand(50,100);
     }
 
-
-    var starsCount = 500;
+    var starsCount = 250;
     var starxs =[]
     var starys =[]
     var starrads =[]
+    for(var i=0; i<starsCount;i++){
+      starxs.push(rand(-50,1000));
+      starys.push(rand(0,ground));
+      starrads.push(rand(1,4));
+    }
+
 
 
     
-    var pressed = {};
-    var player = new Box(0,300,50,100);
-    
-    var monolith = new Box(300,300,500,200);
-    var effects = [];
-    var ground = 500;
-
-    var camera = 0;
-    
-    var ctx = document.getElementById('canvas').getContext('2d');
 
 
     function setup() {
@@ -159,6 +160,7 @@
         effects.push(new lavaBallEffect());
       }
       
+      monolith.updateStatus();
     }
 
 
@@ -217,7 +219,18 @@
 
 
     function drawStarfield(ctx){
-
+      ctx.save();
+      ctx.translate(-camera/10,0);
+      for(var i=0; i < starsCount ; i++){
+        ctx.fillStyle = "#ffffaa;"
+        //g.globalAlpha = rand(0.01,0.1);
+        ctx.beginPath();
+        rdiff = rand(0.9,1.1);        
+        ctx.arc(starxs[i],starys[i],starrads[i]*rdiff,0,Math.PI*2,true);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();         
     }
 
     function drawSkyline1(ctx){
@@ -266,6 +279,7 @@
 
     function draw() {
       drawBackground(ctx);
+      drawStarfield(ctx);
       drawSkyline1(ctx);
       drawSkyline2(ctx);
       drawSkyline3(ctx);
@@ -286,6 +300,7 @@
       this.w = w;
       this.h = h;
       this.health = this.w*this.h;
+      this.damageCooldown = 0;
       this.fillRect = function(ctx) {
         ctx.fillRect(this.x,this.y,this.w,this.h);
       }
@@ -334,7 +349,20 @@
       
       this.damage = function(d){
         this.health -= d;
-        effects.push(new boxDamageEffect(this));
+        if(this.damageCooldown == 0){
+          this.damageCooldown = 5;
+          effects.push(new boxDamageEffect(this));
+        }
+
+      }
+      
+      //this is an optional method for boxes that may take damage
+      //and potentially be more interactive later
+      this.updateStatus = function(){
+        if(this.damageCooldown > 0){
+          this.damageCooldown--;
+        }
+          
       }
       
       
@@ -425,7 +453,7 @@ function lazerEffect(x,y){
     }
     
     this.radius = function(){
-      return ((0.5*this.power)*(1-(this.age/this.maxage))+(0.1*this.power));
+      return ((0.5*this.power)*(1-(this.age/this.maxage))+(0.40*this.power));
     }
 
     this.draw = function(g) {
