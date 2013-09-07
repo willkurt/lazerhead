@@ -161,6 +161,7 @@
       }
       
       monolith.updateStatus();
+      player.updateStatus();
     }
 
 
@@ -375,18 +376,27 @@ function lavaBallEffect(){
     this.size = rand(20,50);
     this.x = player.x - 350;
     this.y = rand(ground-this.size,0);
+    this.box = new Box(this.x+this.size*0.15,this.y+this.size*0.15,this.size*0.7,this.size*0.7);
     this.dx = rand(2,4);
     this.tick = function(){
       this.age++;
       this.x += this.dx;
+      this.box.x += this.dx;
+      if(this.box.intersects(player)){
+        console.log("ouch!")
+        player.y -= 10;
+        player.x += 30;
+        this.age = this.maxage;
+        player.damage(Math.sqrt(this.x*this.y));
+      }
+      
     }
     
     this.draw = function(g){
       g.save();
 
       g.fillStyle = "#dd2222";
-      g.fillRect(this.x+this.size*0.15,this.y+this.size*0.15,this.size*0.7,this.size*0.7);
-
+      this.box.fillRect(g);
       g.globalAlpha = 0.6;
       g.fillStyle = "#dddd22";
       g.fillRect(this.x,this.y,this.size,this.size);
@@ -406,7 +416,7 @@ function lavaBallEffect(){
 function boxDamageEffect(box){
     this.box = box;
     this.age = 0;
-    this.maxage = 2;
+    this.maxage = 4;
     this.damageColor = "#ffff00"
     this.tick = function(){
       this.age++
