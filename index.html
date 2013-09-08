@@ -26,7 +26,11 @@
 
 
     var pressed = {};
-    var player = new Box(0,300,50,100);
+    var player = new Box(0,300,50,126);
+    var playerAnim = {};
+    var sprite = new Image();
+    sprite.src = "sprites.png";
+
     
     var monolith = new Box(300,300,500,200);
     var effects = [];
@@ -84,6 +88,18 @@
       player.dy = 0;
       player.power = 25;
       player.maxpower = 150;
+
+      playerAnim.idle = [];
+      playerAnim.running = [];
+      for(var i=0; i < 4; i++){
+        playerAnim.idle.push({x:i*64, y:0});
+        playerAnim.running.push({x:i*64,y:64});
+      }
+
+      playerAnim.index = 0;
+      playerAnim.name = "idle";
+      
+
     }
     
 
@@ -106,18 +122,21 @@
 
      
     var jumping = false;
-    function updateGameState() {
 
+    function updateGameState() {
+      playerAnim.name = "idle";
       if(pressed['A'.charCodeAt(0)] == true) {
         player.x -= 3;
+        playerAnim.name = "running";
       }
       if(pressed['D'.charCodeAt(0)] == true) {
         player.x += 3;
+        playerAnim.name = "running";
       }
 
       if(pressed[' '.charCodeAt(0)] == true) {
         if(!jumping && player.getBottom()>0){
-          player.dy -= 30;
+          player.dy -= 20;
           jumping = true;
         }}
       else {
@@ -125,7 +144,7 @@
       }
       
       if(pressed['J'.charCodeAt(0)] == true){
-        effects.push(new lazerEffect(player.x+player.w-20,player.y));
+        effects.push(new lazerEffect(player.x+player.w-10,player.y+20));
         if(player.getBottom() < ground){ 
           player.x -= (Math.pow(player.power,2))*0.0010; 
         }else{
@@ -176,7 +195,8 @@
       }
 
       if(player.getBottom() < 0){
-        player.setBottom(0);
+        player.y = 0;
+        player.dy= 0;
       }
       
       
@@ -185,7 +205,17 @@
 
     var tick = 0;
     function processAnimations() {
-
+      
+      tick++;
+      //rate of animations
+      if(tick % 6 == 0){
+        playerAnim.index++;
+      }
+      
+      if(playerAnim.index >= playerAnim[playerAnim.name].length){
+        playerAnim.index = 0;
+      }
+      
     }
 
     function drawBackground(ctx){
@@ -203,11 +233,17 @@
 
     function drawPlayer(ctx){
       ctx.save();
-      //player
-      ctx.fillStyle = "white";
-      player.fillRect(ctx);
-      ctx.restore();
-    }
+      ctx.translate(player.x,player.y);
+      var slice = playerAnim[playerAnim.name][playerAnim.index];
+      ctx.imageSmoothingEnabled = false;
+      ctx.mozImageSmoothingEnabled = false;
+      ctx.webkitImageSmoothingEnabled = false;
+      ctx.drawImage(sprite,
+                    slice.x,slice.y,64,64, //src
+                    -64-32,-64-32+8,128*2,128*2 //dst
+                   );
+      
+      ctx.restore();}
 
     function drawWalls(ctx){
       //monolith
@@ -471,10 +507,10 @@ function lazerEffect(x,y){
 
       g.save();
       g.fillStyle = this.color;
-      g.globalAlpha = rand(0.01,0.1);
+      g.globalAlpha = rand(0.2,0.1);
       //g.fillRect(this.x,this.y,20,20*(1-(this.age/this.maxage)));
       g.beginPath();
-      g.arc(this.x,this.y,this.radius(),0,Math.PI*2,true);
+      g.arc(this.x+this.radius(),this.y,this.radius(),0,Math.PI*2,true);
       g.closePath();
       g.fill();
       g.restore();}
