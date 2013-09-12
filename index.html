@@ -24,6 +24,7 @@
       return '#'+Math.floor(Math.random()*16777215).toString(16);
     }
 
+    var ground = 500;
 
     var pressed = {};
     var player = new Box(0,300,50,126);
@@ -31,10 +32,24 @@
     var sprite = new Image();
     sprite.src = "sprites.png";
 
+    var walls = [];
+    var wallCount = 100;
+    var nextWall = 300;
+    for(var i=0; i<wallCount; i++){
+
+      var height  = rand(250,400);
+      var width = rand(50+i*3,100+i*3);
+      walls.push(new Box(nextWall,ground-height,width,height));
+      var dist = rand(100,500);
+      nextWall += width+dist;
+
+    }
+
+
     
-    var monolith = new Box(300,300,500,200);
+
     var effects = [];
-    var ground = 500;
+
 
     var camera = 0;
     
@@ -179,15 +194,32 @@
         effects.push(new lavaBallEffect());
       }
       
-      monolith.updateStatus();
+      
+      updateWalls();
       player.updateStatus();
+    }
+
+    //applies a function to all walls
+    function applyToWalls(f){
+      for(var i = 0;i< walls.length;i++){
+        f(walls[i]);
+      }
+    }
+
+
+    function updateWalls(){
+      applyToWalls(function(wall){
+        wall.updateStatus();
+      });
     }
 
 
     function checkConditions() {
-      if(player.intersects(monolith)){
-        console.log("player hit monolith");
-      }
+      applyToWalls(function(wall){
+        if(player.intersects(wall)){
+          console.log("player hit wall!");
+        }
+      });
         
       if(player.getBottom() > ground){
         player.dy = 0;
@@ -246,12 +278,12 @@
       ctx.restore();}
 
     function drawWalls(ctx){
-      //monolith
-      if(monolith.health > 0){
-        ctx.fillStyle = "#a9a9a9";
-        monolith.fillRect(ctx);
-      }
-
+      ctx.fillStyle = "#a9a9a9";
+      applyToWalls(function(wall){
+        if(wall.health > 0){
+          wall.fillRect(ctx);
+        }
+      });
     }
 
 
@@ -483,15 +515,16 @@ function lazerEffect(x,y){
     this.color = "#ff0000";
     this.tick = function(){
       this.age++;
-     
-      if(!monolith.intersectedByPoint(this.x,this.y)){    
-        this.x += this.dx;
-      } else if(this.alive) {
-        this.age += 5;
-        monolith.damage(this.radius());
+      var clear = true;
+      for(var i = 0 ;i < walls.length;i++){
+        if(walls[i].intersectedByPoint(this.x+this.radius(),this.y) && this.alive){    
+          clear = false;
+          this.age += 5;
+          walls[i].damage(this.radius());
+        }
       }
+      if(clear){this.x += this.dx;}
 
-      this.y;
       if(this.age > this.maxage) {
         this.alive = false;
         return;
