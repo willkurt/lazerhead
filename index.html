@@ -137,19 +137,38 @@
 
      
     var jumping = false;
-
+    var charging = false;
     function updateGameState() {
       playerAnim.name = "idle";
-      if(pressed['A'.charCodeAt(0)] == true) {
+      charging = false;
+
+      //charging lazer
+      if(pressed['L'.charCodeAt(0)] == true){
+        if(player.power < player.maxpower){
+          console.log("Aaaaaaaaaaa!!!")
+          player.power += 0.5;
+        } else {
+          console.log("MAX POWER!");
+        }
+        //when charging, you can only charge
+        charging = true;
+          
+      }
+
+
+      //moving forward
+      if(pressed['A'.charCodeAt(0)] == true && !charging) {
         player.x -= 3;
         playerAnim.name = "running";
       }
-      if(pressed['D'.charCodeAt(0)] == true) {
+
+      //moving backward
+      if(pressed['D'.charCodeAt(0)] == true && !charging) {
         player.x += 3;
         playerAnim.name = "running";
       }
 
-      if(pressed[' '.charCodeAt(0)] == true) {
+      if(pressed[' '.charCodeAt(0)] == true && !charging) {
         if(!jumping && player.getBottom()>0){
           player.dy -= 20;
           jumping = true;
@@ -158,7 +177,7 @@
         jumping = false;
       }
       
-      if(pressed['J'.charCodeAt(0)] == true){
+      if(pressed['J'.charCodeAt(0)] == true && !charging){
         effects.push(new lazerEffect(player.x+player.w-10,player.y+20));
         if(player.getBottom() < ground){ 
           player.x -= (Math.pow(player.power,2))*0.0010; 
@@ -169,16 +188,6 @@
       }
       
       
-      if(pressed['L'.charCodeAt(0)] == true){
-        if(player.power < player.maxpower){
-          console.log("Aaaaaaaaaaa!!!")
-          player.power += 0.5;
-        } else {
-          console.log("MAX POWER!");
-        }
-          
-          
-      }
       
       //float while using lazer!
       if(pressed['J'.charCodeAt(0)] != true){     
@@ -217,6 +226,9 @@
     function checkConditions() {
       applyToWalls(function(wall){
         if(player.intersects(wall)){
+         player.damage(500);
+          player.y -= 4
+          player.x -= 10
           console.log("player hit wall!");
         }
       });
@@ -231,6 +243,11 @@
         player.dy= 0;
       }
       
+      if(player.getLeft() < -300){
+        effects.push(new lavaBallEffect());
+        effects.push(new lavaBallEffect());
+        effects.push(new lavaBallEffect());
+      }
       
     }
 
@@ -264,6 +281,8 @@
     }
 
     function drawPlayer(ctx){
+      if(player.health <= 0){return false;
+                                   }
       ctx.save();
       ctx.translate(player.x,player.y);
       var slice = playerAnim[playerAnim.name][playerAnim.index];
@@ -388,7 +407,7 @@
                            }
       
       this.intersects = function(box) {
-        if(box.health <= 0){return false;
+        if(box.health <= 0 || this.health <= 0){return false;
                                     }
         if(this.getRight() >= box.getLeft() 
            && this.getLeft() <= box.getRight()) {
@@ -455,7 +474,7 @@ function lavaBallEffect(){
         player.y -= 10;
         player.x += 30;
         this.age = this.maxage;
-        player.damage(Math.sqrt(this.x*this.y));
+        player.damage(this.size*this.size);
       }
       
     }
