@@ -24,8 +24,8 @@
       return '#'+Math.floor(Math.random()*16777215).toString(16);
     }
 
-    var ground = 500;
 
+    var ground = 500;
     var pressed = {};
     var player = new Box(0,300,50,126);
     var playerAnim = {};
@@ -33,18 +33,21 @@
     sprite.src = "sprites.png";
 
     var walls = [];
-    var wallCount = 100;
+    var wallCount = 7;
     var nextWall = 300;
     for(var i=0; i<wallCount; i++){
 
       var height  = rand(250,400);
-      var width = rand(50+i*3,100+i*3);
+      var width = rand(50+i*5,100+i*5);
       walls.push(new Box(nextWall,ground-height,width,height));
       var dist = rand(100,500);
       nextWall += width+dist;
 
     }
 
+    var magicDoor = new Box(nextWall+50,ground-126,50,126); 
+    //boss wall!
+    walls.push(new Box(nextWall-20,ground-450,300,450));
 
     
 
@@ -113,12 +116,8 @@
 
       playerAnim.index = 0;
       playerAnim.name = "idle";
-      
-
     }
     
-
-
 
     function gameLoop() {
       processInput();
@@ -224,6 +223,19 @@
 
 
     function checkConditions() {
+      if(player.intersects(magicDoor)){
+        console.log("YOU WIN!")
+        player.maxpower = 500;
+        player.power = 500;
+        effects.push(new risingLineEffect());
+        effects.push(new risingLineEffect());
+        effects.push(new risingLineEffect());
+        effects.push(new risingLineEffect());
+        effects.push(new risingLineEffect());
+        effects.push(new risingLineEffect());
+        
+      }
+      
       applyToWalls(function(wall){
         if(player.intersects(wall)){
          player.damage(500);
@@ -232,7 +244,7 @@
           console.log("player hit wall!");
         }
       });
-        
+
       if(player.getBottom() > ground){
         player.dy = 0;
         player.setBottom(ground);
@@ -278,6 +290,13 @@
       //ground
       ctx.fillStyle = "#555555";
       ctx.fillRect(0,500,800,100);
+    }
+
+    function drawMagicDoor(ctx){
+      ctx.save();
+      ctx.fillStyle = randColor();
+      magicDoor.fillRect(ctx);
+      ctx.restore();
     }
 
     function drawPlayer(ctx){
@@ -375,6 +394,7 @@
       drawGround(ctx);
       ctx.save();
       ctx.translate(-camera,0);
+      drawMagicDoor(ctx);
       drawPlayer(ctx);
       drawWalls(ctx);
       drawEffects(ctx);
