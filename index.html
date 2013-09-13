@@ -152,7 +152,7 @@
         }
         //when charging, you can only charge
         charging = true;
-          
+        effects.push(new risingLineEffect());
       }
 
 
@@ -496,6 +496,38 @@ function lavaBallEffect(){
       return this.age < this.maxage;
     }
     
+    
+}
+
+function risingLineEffect(){
+    this.x = rand(player.x-20-player.power/5,player.x+player.w+20+player.power/5);
+    this.y = player.y+player.h;
+    this.length = rand(player.power/5,player.power/2);
+    this.width = player.power/25;
+    this.dy = rand(2,6);
+    this.age = 0;
+    this.maxage = rand(5,10);
+
+    this.tick = function(){
+      this.age++;
+      this.y -= this.dy;
+    }
+    
+    this.draw = function(ctx){
+      ctx.save();
+      ctx.globalAlpha = rand(0.1,0.5);
+      ctx.strokeStyle = "yellow";
+      ctx.lineWidth = this.width;
+      ctx.beginPath();
+      ctx.moveTo(this.x,this.y);
+      ctx.lineTo(this.x,this.y-this.length)
+      ctx.stroke();
+      ctx.restore();
+    }
+    
+    this.isAlive = function(){
+      return(this.age < this.maxage);
+    }
     
 }
 
