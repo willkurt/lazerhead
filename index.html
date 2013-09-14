@@ -24,46 +24,57 @@
       return '#'+Math.floor(Math.random()*16777215).toString(16);
     }
 
+    //constants accross the game
+    var consts = {
+      'ground': 500,
+      'playerW': 50,
+      'playerH': 126,
+      'initialPower': 25,
+      'wallCount': 7,
+      'starsCount': 250,
 
-    var ground = 500;
+      
+    };
+    
+
+    //refactor note: might be nice to put all these into an 'app' object as well
+    var effects = [];
+    var camera = 0;
+    var ctx = document.getElementById('canvas').getContext('2d');
     var pressed = {};
-    var player = new Box(0,300,50,126);
+    var player = new Box(0,300,consts.playerW,consts.playerH);
     var playerAnim = {};
     var sprite = new Image();
     sprite.src = "sprites.png";
 
-    var walls = [];
-    var wallCount = 7;
-    var nextWall = 300;
-    for(var i=0; i<wallCount; i++){
+    var jumping = false;
+    var charging = false;
+    var playerDied = false;
+    var gameWon = false;
 
+
+    //generate the walls
+    var walls = [];
+    var nextWall = 300;
+    for(var i=0; i< consts.wallCount; i++){
       var height  = rand(250,400);
       var width = rand(50+i*5,100+i*5);
-      walls.push(new Box(nextWall,ground-height,width,height));
+      walls.push(new Box(nextWall,consts.ground-height,width,height));
       var dist = rand(100,500);
       nextWall += width+dist;
 
     }
-
-    var magicDoor = new Box(nextWall+50,ground-126,50,126); 
     //boss wall!
-    walls.push(new Box(nextWall-20,ground-450,300,450));
+    walls.push(new Box(nextWall-20,consts.ground-450,300,450));
 
-    
+    //final objective
+    var magicDoor = new Box(nextWall+50,consts.ground-126,50,126); 
 
-    var effects = [];
-
-
-    var camera = 0;
-    
-    var ctx = document.getElementById('canvas').getContext('2d');
-
-
+    //backgrounds...
     var skyline1 = [];
     for(var i=0; i<200; i++){
       skyline1[i] = rand(20,250);
     }
-
 
     var skyline2 = [];
     for(var i=0; i<100; i++){
@@ -79,19 +90,14 @@
       skyline3widths[i] = rand(50,100);
     }
 
-    var starsCount = 250;
     var starxs =[]
     var starys =[]
     var starrads =[]
-    for(var i=0; i<starsCount;i++){
+    for(var i=0; i<consts.starsCount;i++){
       starxs.push(rand(-50,1000));
-      starys.push(rand(0,ground));
+      starys.push(rand(0,consts.ground));
       starrads.push(rand(1,4));
     }
-
-
-
-    
 
 
     function setup() {
@@ -120,7 +126,6 @@
     
 
     function gameLoop() {
-      processInput();
       updateGameState();
       checkConditions();
       processAnimations();
@@ -129,14 +134,6 @@
       window.requestAnimFrame(gameLoop);
     }
     
-    
-    function processInput() {
-
-    }
-
-     
-    var jumping = false;
-    var charging = false;
     function updateGameState() {
       //freeze controls if player is dead
       if(playerDied){return false;}
@@ -181,7 +178,7 @@
       
       if(pressed['J'.charCodeAt(0)] == true && !charging){
         effects.push(new lazerEffect(player.x+player.w-10,player.y+20));
-        if(player.getBottom() < ground){ 
+        if(player.getBottom() < consts.ground){ 
           player.x -= (Math.pow(player.power,2))*0.0010; 
         }else{
           player.x -= (Math.pow(player.power,2))*0.000325;
@@ -200,7 +197,6 @@
 
       camera = player.x - 200;
 
-
       if(rand(0,100) > 99){
         effects.push(new lavaBallEffect());
       }
@@ -214,23 +210,13 @@
       
     }
 
-    //applies a function to all walls
-    function applyToWalls(f){
-      for(var i = 0;i< walls.length;i++){
-        f(walls[i]);
-      }
-    }
-
-
-    function updateWalls(){
-      applyToWalls(function(wall){
+   function updateWalls(){
+      walls.forEach(function(wall){
         wall.updateStatus();
       });
     }
 
-    var playerDied = false;
-    var gameWon = false;
-
+   
     //refactor note: this is really similar to setup
     //so the may be able to be merged, but if not
     //at least pull everything into some constants
@@ -245,7 +231,7 @@
       gameWon = false;
       player.x = 0;
       player.y = 300;
-      player.power = 25; 
+      player.power = consts.initialPower; 
       player.health = player.h*player.w;
       walls.forEach(function(w){
         w.health = w.h*w.w;
@@ -279,7 +265,7 @@
         setTimeout(resetGame,800);
       }
 
-      applyToWalls(function(wall){
+     walls.forEach(function(wall){
         if(player.intersects(wall)){
          player.damage(500);
           player.y -= 4
@@ -289,9 +275,9 @@
         }
       });
 
-      if(player.getBottom() > ground){
+      if(player.getBottom() > consts.ground){
         player.dy = 0;
-        player.setBottom(ground);
+        player.setBottom(consts.ground);
       }
 
       if(player.getBottom() < 0){
@@ -361,7 +347,7 @@
 
     function drawWalls(ctx){
       ctx.fillStyle = "#a9a9a9";
-      applyToWalls(function(wall){
+      walls.forEach(function(wall){
         if(wall.health > 0){
           wall.fillRect(ctx);
         }
@@ -372,7 +358,7 @@
     function drawStarfield(ctx){
       ctx.save();
       ctx.translate(-camera/10,0);
-      for(var i=0; i < starsCount ; i++){
+      for(var i=0; i < consts.starsCount ; i++){
         ctx.fillStyle = "#ffffaa;"
         //g.globalAlpha = rand(0.01,0.1);
         ctx.beginPath();
@@ -390,7 +376,7 @@
       ctx.fillStyle = "#222230";
       for(var i in skyline1) {
         var h = skyline1[i];
-        ctx.fillRect(i*25-200,ground - h,26,h);
+        ctx.fillRect(i*25-200,consts.ground - h,26,h);
       }
       ctx.restore();
 
@@ -402,7 +388,7 @@
       ctx.fillStyle = "#333344";
       for(var i in skyline2) {
         var h = skyline2[i];
-        ctx.fillRect(i*50-200,ground - h,51,h);
+        ctx.fillRect(i*50-200,consts.ground - h,51,h);
       }
       ctx.restore();
     }
@@ -413,7 +399,7 @@
       ctx.fillStyle = "#555567";
       for(var i in skyline3) {
         var h = skyline3[i];
-        ctx.fillRect(i*skyline3dists[i],ground - h,skyline3widths[i],h);
+        ctx.fillRect(i*skyline3dists[i],consts.ground - h,skyline3widths[i],h);
       }
       ctx.restore();
     }
@@ -526,7 +512,7 @@ function lavaBallEffect(){
     this.maxage = 800;
     this.size = rand(20,50);
     this.x = player.x - 350;
-    this.y = rand(ground-this.size,0);
+    this.y = rand(consts.ground-this.size,0);
     this.box = new Box(this.x+this.size*0.15,this.y+this.size*0.15,this.size*0.7,this.size*0.7);
     this.dx = rand(2,4);
     this.tick = function(){
@@ -544,16 +530,16 @@ function lavaBallEffect(){
       
     }
     
-    this.draw = function(g){
-      g.save();
+    this.draw = function(ctx){
+      ctx.save();
 
-      g.fillStyle = "#dd2222";
-      this.box.fillRect(g);
-      g.globalAlpha = 0.6;
-      g.fillStyle = "#dddd22";
-      g.fillRect(this.x,this.y,this.size,this.size);
+      ctx.fillStyle = "#dd2222";
+      this.box.fillRect(ctx);
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = "#dddd22";
+      ctx.fillRect(this.x,this.y,this.size,this.size);
 
-      g.restore();
+      ctx.restore();
     }
     
          
@@ -671,9 +657,9 @@ function boxDamageEffect(box){
       this.age++
     }
     
-    this.draw = function(g){
-      g.fillStyle = this.damageColor;
-      this.box.fillRect(g);
+    this.draw = function(ctx){
+      ctx.fillStyle = this.damageColor;
+      this.box.fillRect(ctx);
     }
     
     this.isAlive = function(){
@@ -719,18 +705,18 @@ function lazerEffect(x,y){
       return ((0.5*this.power)*(1-(this.age/this.maxage))+(0.40*this.power));
     }
 
-    this.draw = function(g) {
+    this.draw = function(ctx) {
       if(!this.alive) return;
 
-      g.save();
-      g.fillStyle = this.color;
-      g.globalAlpha = rand(0.2,0.1);
+      ctx.save();
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = rand(0.2,0.1);
       //g.fillRect(this.x,this.y,20,20*(1-(this.age/this.maxage)));
-      g.beginPath();
-      g.arc(this.x+this.radius(),this.y,this.radius(),0,Math.PI*2,true);
-      g.closePath();
-      g.fill();
-      g.restore();}
+      ctx.beginPath();
+      ctx.arc(this.x+this.radius(),this.y,this.radius(),0,Math.PI*2,true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();}
     
     //isAlive will be used to remove effects from global effects list
     this.isAlive = function(){
