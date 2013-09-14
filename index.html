@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>LazerHead: Escape from Planetl Hades!!!</title>
+<title>LazerHead: Escape from Planet Hades!!!</title>
 </head>
 <body>
   <canvas id='canvas' width='800' height='600'></canvas>
@@ -191,8 +191,8 @@
       
       
       
-      //float while using lazer!
-      if(pressed['J'.charCodeAt(0)] != true){     
+      //float while using lazer (if you have enough power)!
+      if(pressed['J'.charCodeAt(0)] != true || player.power < 20){     
         player.y += player.dy;
         player.dy += 1;
 
@@ -751,5 +751,15 @@ function lazerEffect(x,y){
     window.requestAnimFrame(gameLoop);
 
 </script>
+<div>
+controls:
+<ul>
+<li>'d' - forward</li>
+<li>'a' - backward</li>
+<li>'space' - jump (right now you jump while in the air)</li>
+<li>'j' - lazer!</li>
+<li>'l' - charge lazer! (careful it doesn't get too powerful)</li>
+</ul>
+</div>
 </body>
 </html>
