@@ -205,6 +205,10 @@
       
       updateWalls();
       player.updateStatus();
+      if(Math.random() > ((player.health/(player.w*player.h)) || 0)){
+        effects.push(new hurtEffect());
+      }
+      
     }
 
     //applies a function to all walls
@@ -221,7 +225,7 @@
       });
     }
 
-
+    
     function checkConditions() {
       if(player.intersects(magicDoor)){
         console.log("YOU WIN!")
@@ -551,7 +555,48 @@ function risingLineEffect(){
     
 }
 
+
+//used as a way of indicating how hurt the player is
+//should look like a puff of smoke
+function hurtEffect(){
+    this.x = player.x+rand(-15,15)+player.w;
+    this.y = player.y+15+rand(-15,15);
+    this.dx = rand(3,3);
+    this.dy = rand(3,3);
+    this.rad = rand(3,10);
+    this.alpha = rand(0.5,0.8);
+    this.dalpha = rand(0.8,0.95);
+    this.age = 0;
+    this.maxage = rand(15,30);
     
+    this.tick = function(){
+      this.age++;
+      this.x -= this.dx;
+      this.y -= this.dy;
+      this.rad += 1;
+      this.alpha *= this.dalpha;
+    }
+    
+    this.draw = function(ctx){
+      ctx.save();
+      ctx.fillStyle = "#444444";
+      ctx.globalAlpha = this.alpha;
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.rad,0,Math.PI*2,true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    
+    this.isAlive = function(){
+      return(this.age < this.maxage);
+    }
+
+
+}
+
+//flashes damage on any box
 function boxDamageEffect(box){
     this.box = box;
     this.age = 0;
@@ -574,7 +619,10 @@ function boxDamageEffect(box){
 
 }
 
-
+//main effect for players lazer
+//refactor note: I'm not entirely sure it's worth abstracting the x,
+//ys out here and not elsewhere. while technically cleaner this way
+//the lazerEffect will never originate anywhere other than the player
 function lazerEffect(x,y){
     this.x = x;
     this.dx = 5;
