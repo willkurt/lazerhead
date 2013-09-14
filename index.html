@@ -138,6 +138,9 @@
     var jumping = false;
     var charging = false;
     function updateGameState() {
+      //freeze controls if player is dead
+      if(playerDied){return false;}
+
       playerAnim.name = "idle";
       charging = false;
 
@@ -205,7 +208,7 @@
       
       updateWalls();
       player.updateStatus();
-      if(Math.random() > ((player.health/(player.w*player.h)) || 0)){
+      if(player.health > 0 && Math.random() > ((player.health/(player.w*player.h)) || 0)){
         effects.push(new hurtEffect());
       }
       
@@ -225,26 +228,63 @@
       });
     }
 
+    var playerDied = false;
+    var gameWon = false;
+
+    //refactor note: this is really similar to setup
+    //so the may be able to be merged, but if not
+    //at least pull everything into some constants
+    function resetGame(){
+      effects = [];
+      if(gameWon){
+        effects.push(new superTextEffect("Welcome back champion!!!",100,0,300))
+      } else {
+        effects.push(new superTextEffect("Welcome back!",100,0,300))
+      }
+      playerDied = false;
+      gameWon = false;
+      player.x = 0;
+      player.y = 300;
+      player.power = 25; 
+      player.health = player.h*player.w;
+      walls.forEach(function(w){
+        w.health = w.h*w.w;
+      });
+
+    }
     
     function checkConditions() {
+      //win condition
       if(player.intersects(magicDoor)){
-        console.log("YOU WIN!")
-        player.maxpower = 500;
-        player.power = 500;
-        effects.push(new risingLineEffect());
-        effects.push(new risingLineEffect());
-        effects.push(new risingLineEffect());
-        effects.push(new risingLineEffect());
-        effects.push(new risingLineEffect());
-        effects.push(new risingLineEffect());
+        //don't want to run this everytime the intersection is found
+        if(!gameWon){
+          //kill the lava balls
+          effects = [];
+          gameWon = true;
+          setTimeout(resetGame,800);
+        }
+        effects.push(new superTextEffect("YOU WIN!!!",
+                     rand(20,50),
+                     rand(player.x-150,player.x+player.w+150),
+                     rand(player.y-150,player.y+150))
+                    )
         
+        console.log("YOU WIN!")
       }
       
+      //death condition (only need to set this one, hence the flag)
+      if(player.health <= 0 && !playerDied){
+        playerDied = true;
+        effects.push(new superTextEffect("YOU DEAD!!!!!!",60,player.x,player.y));
+        setTimeout(resetGame,800);
+      }
+
       applyToWalls(function(wall){
         if(player.intersects(wall)){
          player.damage(500);
           player.y -= 4
           player.x -= 10
+          effects.push(new superTextEffect("Owweee!",30,player.x,player.y));
           console.log("player hit wall!");
         }
       });
@@ -494,7 +534,8 @@ function lavaBallEffect(){
       this.x += this.dx;
       this.box.x += this.dx;
       if(this.box.intersects(player)){
-        console.log("ouch!")
+        //console.log("ouch!")
+        effects.push(new superTextEffect("ouch!",20,player.x,player.y))
         player.y -= 10;
         player.x += 30;
         this.age = this.maxage;
@@ -521,6 +562,30 @@ function lavaBallEffect(){
     }
     
     
+}
+
+function superTextEffect(text,duration,x,y){
+    this.text = text;
+    this.x = x;
+    this.y = y;
+    this.age = 0;
+    this.maxage = duration;
+    
+    this.tick = function(){
+      this.age++;
+    }
+
+    this.draw = function(ctx){
+      ctx.save();
+      ctx.fillStyle = "#FFFF00";
+      ctx.font = "bold 40px sans-serif";
+      ctx.fillText(this.text,this.x,this.y);
+      ctx.restore();
+
+    }
+    this.isAlive = function(){
+      return this.age < this.maxage;
+    }
 }
 
 function risingLineEffect(){
@@ -682,6 +747,7 @@ function lazerEffect(x,y){
 
 
     setup();
+    effects.push(new superTextEffect("Welcome to Lazerhead!!!",100,0,300));
     window.requestAnimFrame(gameLoop);
 
 </script>
