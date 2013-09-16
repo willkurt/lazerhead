@@ -1,3 +1,3 @@
 #!/bin/bash
 echo "minifiying"
-java -jar ~/closure/compiler.jar --js=effects.js --js=lazerhead.js --js_output_file=lazerhead.min.js
+java -jar ~/closure/compiler.jar --js=constants.js --js=effects.js --js=backgrounds.js --js=main.js --js_output_file=lazerhead.min.js
