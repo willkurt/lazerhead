@@ -1,0 +1,34 @@
+LAZERHEAD!!!
+
+This is my first canvas game!
+ Heavily inspired by Joshua Marinacci's tutorial at OSCON 2013 (http://www.oscon.com/oscon2013/public/schedule/detail/28823)
+
+
+The premise is simple:
+You a dude with a large lazer for a head and you have avoid
+lava balls and large walls to get to the magic door to escape Planet Hades!
+You can jump (and jump and jump right now), charge your lazer and fire it!
+
+Controls:
+'D' moves you forward
+'A' moves you backward
+'SPACE' jumps
+'J' fires the lazer
+'L' charges the lazer
+
+The more powerful your lazer the greater the kickback (and it's even greater in the air)
+so becareful not to overcharge or you'll be crushed by lava balls!
+
+Upcoming features:
+Larger level (the current one should be very easy to beat)
+Sounds! (really want to do all the music through webkit audio)
+License (plan to open source this, just need to pick a good license)
+
+Browser:
+Since this is a game, for fun, the only browsers I'm supporting is Chrome.
+
+Building:
+The files are combined and minified with the closure compiler. If you're
+only playing the game there's nothing to see here, but if you want to make
+changes make sure you run build.sh (and change the location of the 
+compiler.jar if necessary) to generate the minified js file used by the game.
