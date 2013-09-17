@@ -303,9 +303,9 @@ function drawEffects(ctx){
 function draw() {
   drawBackground(ctx);
   drawStarfield(ctx);
-  drawSkyline1(ctx);
-  drawSkyline2(ctx);
-  drawSkyline3(ctx);
+  drawSkyline(ctx,3,"#222230",25,skyline1);
+  drawSkyline(ctx,2,"#333344",50,skyline2);
+  drawSkylineSpaced(ctx);
   drawGround(ctx);
   
   ctx.save();
