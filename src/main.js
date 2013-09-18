@@ -34,6 +34,45 @@ var playerDied = false;
 var gameWon = false;
 
 
+//audio
+//basic waves from: joshondesign.com/p/demos/sound/waveviz/
+var sin = Math.sin;
+function square(t){
+  var v = sin(t);
+  if(v < 0) return -1;
+  return 1;
+}
+
+function saw(t){
+  t = t/(2*Math.PI);
+  return (t - Math.floor(t))*2 -1;
+}
+
+
+
+var actx = new webkitAudioContext();
+var jsnode = actx.createScriptProcessor(512,0,1);
+var t = 0;
+jsnode.onaudioprocess = function(e) {
+    var output = e.outputBuffer.getChannelData(0);
+    for (var i = 0; i < output.length; i++) {
+        output[i] = lazerSFX(t);
+        t += 0.05;
+    }
+}
+jsnode.connect(actx.destination);
+
+var lazerFiring;
+function lazerSFX(t){
+  if(lazerFiring){
+    return (sin(t)+sin(t*1.02))/2;
+  }
+}
+//end sound
+
+
+
+
 //generate the walls
 var walls = [];
 var nextWall = 300;
@@ -88,6 +127,7 @@ function updateGameState() {
   //freeze controls if player is dead
   if(playerDied){return false;}
   
+  lazerFiring = false;
   playerAnim.name = "idle";
   charging = false;
   
@@ -127,6 +167,7 @@ function updateGameState() {
   }
   
   if(pressed['J'.charCodeAt(0)] == true && !charging){
+    lazerFiring = true;
     effects.push(new lazerEffect(player.x+player.w-10,player.y+20));
     if(player.getBottom() < consts.ground){ 
       player.x -= (Math.pow(player.power,2))*0.0010; 
