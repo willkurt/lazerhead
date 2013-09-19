@@ -20,6 +20,7 @@ function lavaBallEffect(){
       player.x += 30;
       this.age = this.maxage;
       player.damage(this.size*this.size);
+      playerInjured = consts.playerInjuredSFXt;
     }
     
   }

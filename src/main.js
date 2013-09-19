@@ -56,17 +56,30 @@ var t = 0;
 jsnode.onaudioprocess = function(e) {
     var output = e.outputBuffer.getChannelData(0);
     for (var i = 0; i < output.length; i++) {
-        output[i] = lazerSFX(t);
+        output[i] = (lazerSFX(t)+playerInjuredSFX(t))/2;
         t += 0.05;
     }
 }
 jsnode.connect(actx.destination);
 
+//refactor note: really should pull out all these state vars at somepoint
 var lazerFiring;
 function lazerSFX(t){
   if(lazerFiring){
-    return (sin(t)+sin(t*1.02))/2;
+   return (sin(t)+sin(t*1.02))/2;
+  } else {
+    return 0;
   }
+}
+
+var playerInjured;
+function playerInjuredSFX(t){
+  if(playerInjured > 0){
+    return Math.random(t);
+  } else {
+    return 0;
+  }
+
 }
 //end sound
 
@@ -128,6 +141,7 @@ function updateGameState() {
   if(playerDied){return false;}
   
   lazerFiring = false;
+  playerInjured = playerInjured > 0 ? playerInjured - 1 : 0 ;
   playerAnim.name = "idle";
   charging = false;
   
@@ -256,6 +270,7 @@ function checkConditions() {
   
   walls.forEach(function(wall){
     if(player.intersects(wall)){
+      playerInjured = consts.playerInjuredSFXt;
       player.damage(500);
       player.y -= 4
       player.x -= 10
