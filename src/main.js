@@ -48,6 +48,9 @@ function saw(t){
   return (t - Math.floor(t))*2 -1;
 }
 
+function tone(t,freq){
+  return sin(t*2*Math.PI*freq);
+}
 
 
 var actx = new webkitAudioContext();
@@ -56,8 +59,11 @@ var t = 0;
 jsnode.onaudioprocess = function(e) {
     var output = e.outputBuffer.getChannelData(0);
     for (var i = 0; i < output.length; i++) {
-        output[i] = (lazerSFX(t)+playerInjuredSFX(t))/2;
-        t += 0.05;
+        output[i] = (lazerSFX(t)+
+                     playerInjuredSFX(t)+
+                     jumpSFX(t)
+                    )/3;
+        t += 1/44000.0;
     }
 }
 jsnode.connect(actx.destination);
@@ -66,20 +72,35 @@ jsnode.connect(actx.destination);
 var lazerFiring;
 function lazerSFX(t){
   if(lazerFiring){
-   return (sin(t)+sin(t*1.02))/2;
+    return (tone(t,261.63)+tone(t*1.03,261.63))/2;
   } else {
     return 0;
   }
 }
 
+
+
+
+
 var playerInjured;
 function playerInjuredSFX(t){
   if(playerInjured > 0){
-    return Math.random(t);
+    return Math.random(t)+sin(t*2*Math.PI*260);
   } else {
     return 0;
   }
 
+}
+
+var jumpt = 0;
+function jumpSFX(t) {
+  if(player.getBottom() >= consts.ground){
+    jumpt = 0;
+    return 0;
+  }
+  jumpt += 1/44000.0;
+  var freq = 260*(1+jumpt);
+  return 0;
 }
 //end sound
 
