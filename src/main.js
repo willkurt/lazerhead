@@ -59,10 +59,11 @@ var t = 0;
 jsnode.onaudioprocess = function(e) {
     var output = e.outputBuffer.getChannelData(0);
     for (var i = 0; i < output.length; i++) {
-        output[i] = (lazerSFX(t)+
+        out = (lazerSFX(t)+
                      playerInjuredSFX(t)+
-                     jumpSFX(t)
-                    )/3;
+                     chargeSFX(t)
+              )/3;
+      output[i] = out;
         t += 1/44000.0;
     }
 }
@@ -92,14 +93,28 @@ function playerInjuredSFX(t){
 
 }
 
-var jumpt = 0;
-function jumpSFX(t) {
-  if(player.getBottom() >= consts.ground){
-    jumpt = 0;
-    return 0;
+var charget = 0.15;
+var chargeUp = false;
+function chargeSFX(t) {
+
+  if(charging){
+    if(charget > 0.3){
+      chargeUp = false
+    }
+    if(charget < 0.01){
+      chargeUp = true
+    }
+
+    if(!chargeUp){
+      charget -= 1/(44000.0*(1.1-player.power/player.maxpower));
+    } else {
+      charget += 1/(44000.0*(1.1-player.power/player.maxpower));
+    }
+    var freq = 260*(1+charget);
+    return (sin(charget*2*Math.PI*freq)+
+            sin(charget*2*Math.PI*freq*1.2)+
+            sin(charget*2*Math.PI*freq*1.7))/3;
   }
-  jumpt += 1/44000.0;
-  var freq = 260*(1+jumpt);
   return 0;
 }
 //end sound
