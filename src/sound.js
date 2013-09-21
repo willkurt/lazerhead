@@ -25,8 +25,9 @@ jsnode.onaudioprocess = function(e) {
     for (var i = 0; i < output.length; i++) {
         out = (lazerSFX(t)+
                      playerInjuredSFX(t)+
-                     chargeSFX(t)
-              )/3;
+                     chargeSFX(t)+
+					 wallDamagedSFX(t)
+              )/4;
       output[i] = out;
         t += 1/44000.0;
     }
@@ -55,6 +56,15 @@ function playerInjuredSFX(t){
     return 0;
   }
 
+}
+
+var wallDamaged;
+function wallDamagedSFX(t){
+   if(wallDamaged > 0){
+      return tone(t,120);
+   } else {
+     return 0;
+   }
 }
 
 var charget = 0.15;

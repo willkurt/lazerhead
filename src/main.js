@@ -93,6 +93,7 @@ function updateGameState() {
   
   lazerFiring = false;
   playerInjured = playerInjured > 0 ? playerInjured - 1 : 0 ;
+  wallDamaged = wallDamaged > 0 ? wallDamaged - 1 : 0 ;
   playerAnim.name = "idle";
   charging = false;
   

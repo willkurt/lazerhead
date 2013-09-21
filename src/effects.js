@@ -181,6 +181,7 @@ function lazerEffect(x,y){
         clear = false;
         this.age += 5;
         walls[i].damage(this.radius());
+		wallDamaged = consts.wallDamagedSFXt;
       }
     }
     if(clear){this.x += this.dx;}

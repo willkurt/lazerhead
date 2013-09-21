@@ -6,5 +6,6 @@ var consts = {
   'initialPower': 25,
   'wallCount': 7,
   'starsCount': 250,
-  'playerInjuredSFXt': 5
+  'playerInjuredSFXt': 5,
+  'wallDamagedSFXt': 1
 };
