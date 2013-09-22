@@ -96,9 +96,10 @@ function updateGameState() {
   wallDamaged = wallDamaged > 0 ? wallDamaged - 1 : 0 ;
   playerAnim.name = "idle";
   charging = false;
-  
+  jumpPressed = false;
   //charging lazer
   if(pressed['L'.charCodeAt(0)] == true){
+  
     if(player.power < player.maxpower){
       console.log("Aaaaaaaaaaa!!!")
       player.power += 0.5;
@@ -124,9 +125,11 @@ function updateGameState() {
   }
   
   if(pressed[' '.charCodeAt(0)] == true && !charging) {
+    
     if(!jumping && player.getBottom()>0){
       player.dy -= 20;
       jumping = true;
+	  jumpPressed = true;
     }}
   else {
     jumping = false;

@@ -26,7 +26,8 @@ jsnode.onaudioprocess = function(e) {
         out = (lazerSFX(t)+
                      playerInjuredSFX(t)+
                      chargeSFX(t)+
-					 wallDamagedSFX(t)
+					 wallDamagedSFX(t)+
+					 jumpSFX(t)
               )/4;
       output[i] = out;
         t += 1/44000.0;
@@ -66,6 +67,30 @@ function wallDamagedSFX(t){
      return 0;
    }
 }
+
+var jumpt = 0;
+var jumpPressed = false;
+var baseJumpFreq = 350;
+function jumpSFX(t){
+   if(jumpPressed){
+       jumpt = 0.1;
+       var sound = (sin(t*2*Math.PI*baseJumpFreq)+
+            sin(2*Math.PI*baseJumpFreq*1.2)+
+            sin(2*Math.PI*baseJumpFreq*1.7))/3;
+		
+		return sound;
+   } else if(jumpt > 0){
+     jumpt -= 1/44000.0
+	 var freq = baseJumpFreq*(1-(jumpt)); 
+	 return (sin(2*Math.PI*freq)+
+            sin(2*Math.PI*freq*1.2)+
+            sin(2*Math.PI*freq*1.7))/3;
+   } else {
+     jumpt = 0;
+     return 0;
+   }
+}
+
 
 var charget = 0.15;
 var chargeUp = false;
