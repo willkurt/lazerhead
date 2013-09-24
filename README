@@ -20,15 +20,17 @@ The more powerful your lazer the greater the kickback (and it's even greater in 
 so becareful not to overcharge or you'll be crushed by lava balls!
 
 Upcoming features:
-Larger level (the current one should be very easy to beat)
-Sounds! (really want to do all the music through webkit audio)
-License (plan to open source this, just need to pick a good license)
+Music!
 
 Browser:
-Since this is a game, for fun, the only browsers I'm supporting is Chrome.
+Since this is a game, for fun, and uses webkitAudioContext the only browsers I'm supporting is Chrome.
 
 Building:
 The files are combined and minified with the closure compiler. If you're
 only playing the game there's nothing to see here, but if you want to make
 changes make sure you run build.sh (and change the location of the 
-compiler.jar if necessary) to generate the minified js file used by the game.
+compiler.jar if necessary, also build.bat for those windows users) to generate the minified js file used by the game.
+
+License:
+The game art (ie my crappy sprites) is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported license (https://creativecommons.org/licenses/by-sa/3.0/deed.en_US)
+All the code is licensed under The MIT License
