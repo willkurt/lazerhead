@@ -41,14 +41,14 @@ var gameWon = false;
 var walls = [];
 var nextWall = 300;
 for(var i=0; i< consts.wallCount; i++){
-  var height  = rand(250,400);
-  var width = rand(50+i*5,100+i*5);
+  var height  = rand(250,500);
+  var width = rand(50+i*5,100+i*20);
   walls.push(new Box(nextWall,consts.ground-height,width,height));
   var dist = rand(100,500);
   nextWall += width+dist;
 }
 //boss wall!
-walls.push(new Box(nextWall-20,consts.ground-450,300,450));
+walls.push(new Box(nextWall-20,consts.ground-450,600,450));
 
 //final objective
 var magicDoor = new Box(nextWall+50,consts.ground-126,50,126); 

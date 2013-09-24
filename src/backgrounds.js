@@ -1,18 +1,18 @@
 //backgrounds...
 var skyline1 = [];
-for(var i=0; i<200; i++){
+for(var i=0; i<400; i++){
   skyline1[i] = rand(20,250);
 }
 
 var skyline2 = [];
-for(var i=0; i<100; i++){
+for(var i=0; i<300; i++){
   skyline2[i] = rand(50,200);
 }
 
 var skyline3 = []
 var skyline3dists = []
 var skyline3widths = []
-for(var i=0; i<100; i++){
+for(var i=0; i<200; i++){
   skyline3[i] = rand(250,400);
   skyline3dists[i] = rand(250,500);
   skyline3widths[i] = rand(50,100);
@@ -22,7 +22,7 @@ var starxs =[]
 var starys =[]
 var starrads =[]
 for(var i=0; i<consts.starsCount;i++){
-  starxs.push(rand(-50,1000));
+  starxs.push(rand(-50,2000));
   starys.push(rand(0,consts.ground));
   starrads.push(rand(1,4));
 }
