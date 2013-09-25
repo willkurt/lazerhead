@@ -12,9 +12,42 @@ function saw(t){
   return (t - Math.floor(t))*2 -1;
 }
 
+var scale = {
+    C4:261.626,
+    D4:293.665,
+    E4:329.628,
+    F4:349.228,
+    G4:391.995,
+    A4:440.000,
+    B4:493.883    
+}
+var notes = [scale.A4,scale.A4,scale.A4, scale.D4, scale.E4, scale.D4, scale.E4,scale.E4, scale.E4,
+scale.A4,scale.D4,scale.A4, scale.F4, scale.G4, scale.G4, scale.E4,scale.E4, scale.E4];
+
 function tone(t,freq){
   return sin(t*2*Math.PI*freq);
 }
+
+var noteLen = 0.4;
+function note(t) {
+    var cur = (Math.floor(t/noteLen) % notes.length);
+    return notes[cur];
+}
+
+function music(t) {
+    var ti = Math.floor(t/noteLen)*noteLen;
+    var t2 = (t-ti);
+    var te = t2*noteLen;
+    
+    var freq = note(t);
+    var ton = tone(t2, freq);
+	return ton;
+    //var env = envelope(te);
+    //return ton*env;
+}
+
+
+
 
 
 var actx = new webkitAudioContext();
@@ -23,12 +56,13 @@ var t = 0;
 jsnode.onaudioprocess = function(e) {
     var output = e.outputBuffer.getChannelData(0);
     for (var i = 0; i < output.length; i++) {
-        out = (lazerSFX(t)+
+        out = (music(t)+
+					lazerSFX(t)+
                      playerInjuredSFX(t)+
                      chargeSFX(t)+
 					 wallDamagedSFX(t)+
 					 jumpSFX(t)
-              )/4;
+              )/5;
       output[i] = out;
         t += 1/44000.0;
     }
@@ -44,10 +78,6 @@ function lazerSFX(t){
     return 0;
   }
 }
-
-
-
-
 
 var playerInjured;
 function playerInjuredSFX(t){
