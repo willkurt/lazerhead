@@ -1,5 +1,8 @@
 //audio
 //basic waves from: joshondesign.com/p/demos/sound/waveviz/
+//much of this code is just slightly modified from the original
+//sample code from joshmarinacci's OSCON course HTML canvas deep dive
+//The book version is here http://joshondesign.com/p/books/canvasdeepdive/toc.html
 var sin = Math.sin;
 function square(t){
   var v = sin(t);
@@ -34,16 +37,31 @@ function note(t) {
     return notes[cur];
 }
 
+
+function lerp(t, lo, hi) { return (hi-lo)*t + lo; }
+function adsr(t, a, d, s, r, al, sl) {
+    if(t < a) return lerp(t/a,0,al);
+    t-=a;
+    if(t < d) return lerp(t/d,al,sl);
+    t-=d;
+    if(t < s) return sl;
+    t-=s;
+    if(t < r) return lerp(t/r,sl,0);
+    return 0;
+}
+function envelope(t) {
+    return adsr(t, 0.3, 0.20, 0.1, 0.19, 0.76, 0.5);
+}
+
 function music(t) {
     var ti = Math.floor(t/noteLen)*noteLen;
     var t2 = (t-ti);
     var te = t2*noteLen;
     
     var freq = note(t);
-    var ton = tone(t2, freq);
-	return ton;
-    //var env = envelope(te);
-    //return ton*env;
+    var ton = tone(t2, freq)+tone(t2*1.2,freq);
+    var env = envelope(te);
+    return ton*env;
 }
 
 
