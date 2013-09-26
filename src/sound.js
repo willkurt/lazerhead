@@ -68,6 +68,8 @@ function music(t) {
 
 
 
+
+if(window.webkitAudioContext){
 var actx = new webkitAudioContext();
 var jsnode = actx.createScriptProcessor(512,0,1);
 var t = 0;
@@ -86,6 +88,8 @@ jsnode.onaudioprocess = function(e) {
     }
 }
 jsnode.connect(actx.destination);
+
+}
 
 //refactor note: really should pull out all these state vars at somepoint
 var lazerFiring;
